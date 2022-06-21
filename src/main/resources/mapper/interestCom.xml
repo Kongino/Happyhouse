@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.happyhouse.dao.CommercialAreaDao">
+	<sql id="searchcond">
+		<if test=" word!=null and word !='' ">
+			<choose>
+				<when test=" key=='Dongname' ">
+					jibuaddress like concat('%', #{word},'%') 
+				</when>
+			</choose>
+		
+		</if>
+	</sql>
+	
+	<sql id="nosearch">
+		<if test=" word == null or word == '' ">
+			and citycode=12345
+		</if>
+	</sql>
+	
+	<select id="commercialAll"	parameterType="PageBean"  resultType="CommercialArea">
+		select shopname, localname, code1, codename3, address, lng, lat from commercialarea 
+		<where>
+			<include refid="searchcond"/>
+
+		</where>
+		limit #{start}, #{interval}
+	</select>
+	
+	<select id="countCom"			parameterType="PageBean" 		resultType="int">
+		select count(*) as cnt from commercialarea
+		<where>
+			<include refid="searchcond"/>
+
+		</where>
+	</select>
+	
+	<select id="stat" parameterType="PageBean" resultType="CommercialCount">
+		select count(case when code1='D' then 1 end) as D, count(case when code1='Q' then 1 end) as Q, count(case when code1='R' then 1 end) as R, count(case when code1='F' then 1 end) as F, count(case when code1='S' then 1 end) as S, count(case when code1='N' then 1 end) as N, count(case when code1='L' then 1 end) as L, count(case when code1='O' then 1 end) as O, count(case when code1='P' then 1 end) as P 
+		from commercialarea 
+		<where>
+			<include refid="searchcond"/>
+
+		</where>
+	</select>
+	
+</mapper>
+
+

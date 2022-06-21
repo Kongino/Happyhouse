@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.happyhouse.dao.PollutionDao">
+	<sql id="searchcond">
+		<if test=" word!=null and word !='' ">
+			<choose>
+				<when test=" key=='Dongname' ">
+					address like concat('%', #{word},'%') 
+				</when>
+			</choose>
+
+		</if>
+	</sql>
+	
+	<sql id="nosearch">
+		<if test=" word == null or word == '' ">
+			and gucode=12345
+		</if>
+	</sql>
+
+	<select id="searchAllP" parameterType="PageBean"
+		resultType="Pollution">
+		select name, dong, address, lng, lat from pollution
+		<where>
+			<include refid="searchcond" />
+			<include refid="nosearch" />
+		</where>
+		limit
+		#{start}, #{interval}
+	</select>
+
+	<select id="countP" parameterType="PageBean" resultType="int">
+		select
+		count(*) as cnt from pollution
+		<where>
+			<include refid="searchcond" />
+			<include refid="nosearch" />
+		</where>
+	</select>
+
+
+
+</mapper>
+
+

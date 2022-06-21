@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.happyhouse.dao.HouseDealDao">
+	<sql id="searchcond">
+		<if test=" word!=null and word !='' ">
+			<choose>
+				<when test=" key=='Aptname' ">
+					apartmentName like concat('%', #{word},'%') and
+				</when>
+			</choose>
+		
+		</if>
+	
+	<!--
+		<if test=" sido!=null and sido !='' ">
+			left(houseinfo.dongCode, 2) = #{sido} and 
+		</if> 
+		<if test=" gugun!=null and gugun !='' ">
+			left(houseinfo.dongCode, 5) = #{gugun} and 
+		</if> 
+		-->
+		
+	</sql>
+	
+	<sql id="sgOK">
+	
+
+		<if test=" gugun!=null and gugun !='' and gugun != 'all' "> 
+			 gugunname = #{gugun} and 
+		</if>
+	</sql>
+	
+	<sql id="sgOKfrom">
+		<if test=" gugun!=null and gugun !='' and gugun != 'all' ">
+			 , guguncode
+		</if>
+	</sql>
+	<sql id="sgOKwhere">
+		<if test=" gugun!=null and gugun !='' and gugun != 'all' ">
+			   and left(houseinfo.dongcode, 5) = left(guguncode.guguncode, 5) 
+		</if>
+	</sql>
+	
+	<sql id="dongOK">
+		<if test = " dongCode != null and dongCode != '' and dongCode != 'all' ">
+			dongcode = ${dongCode} and 
+		</if>
+	</sql>
+	
+	<sql id="priceOK">
+		<if test = "minprice != null and minprice != '' and maxprice != null and maxprice != '' ">
+			cast(replace(dealAmount, ',', '') as unsigned) between cast(${minprice} as unsigned) and cast(${maxprice} as unsigned) and 
+		</if>
+	</sql>
+	
+	<select id="getSido" resultType="sidoGugunCode">
+		select left(sidoCode,2) sidoCode, sidoName
+		from sidocode
+		order by sidoCode
+	</select>
+	
+	<select id="getGugunInSido" parameterType="PageBean" resultType="sidoGugunCode">
+		select distinct left(gugunCode,5) gugunCode, gugunName
+		from guguncode, sidocode 
+		<where>
+			 sidoname = #{sido} and left(gugunCode, 2) = left(sidoCode, 2) 
+		</where>
+		
+		order by gugunCode 
+	</select>
+	
+	
+	<select id="getDongName" parameterType="PageBean" resultType="sidoGugunCode">
+		select distinct DongName, dongcode 
+		from guguncode, sidocode, dongcode 
+		<where>
+			 dongcode.sidoname = #{sido} and dongcode.gugunname = #{gugun} and dongcode is not null and dongname is not null
+		</where>
+		
+		order by gugunCode 
+	</select>
+	
+	
+	<select id="searchAll"	parameterType="PageBean"  resultType="HouseDeal">
+		select concat(roadName, ' ', trim(leading '0' from roadNameBonbun), ' ', trim(leading '0' from roadNameBubun)) roadName, buildYear, housedeal.aptcode, dealamount, dealyear, dealmonth, dealday, area, floor, houseinfo.dong, houseinfo.apartmentName, housedeal.no, houseinfo.lat, houseinfo.lng 
+		from housedeal, houseinfo 
+		<where>
+			<include refid="searchcond"/>
+			<include refid="dongOK"/>
+			<include refid="priceOK"/>
+
+			housedeal.aptcode = houseinfo.aptcode 
+		</where>
+		order by housedeal.dealyear desc, housedeal.dealmonth desc, housedeal.dealday desc 
+		limit #{start}, #{interval}
+	</select>
+	
+	<select id="count"			parameterType="PageBean" 		resultType="int">
+		select count(*) as cnt from housedeal, houseinfo
+		<where>
+			<include refid="searchcond"/>
+			<include refid="dongOK"/>
+			<include refid="priceOK"/>
+
+			housedeal.aptcode = houseinfo.aptcode 
+		</where>
+	</select>
+	
+
+	
+</mapper>
+
+
